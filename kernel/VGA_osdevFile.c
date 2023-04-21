@@ -40,7 +40,10 @@ To do:
 				VGA_NUM_GC_REGS + VGA_NUM_AC_REGS)
 /*****************************************************************************
 VGA REGISTER DUMPS FOR VARIOUS TEXT MODES
-
+ > FORMAT OF DUMP NAME:
+	g_wxh_num-planes
+		w = width of display
+		h = height of display
 ()=to do
 	40x25	(40x30)	40x50	(40x60)
 	(45x25)	(45x30)	(45x50)	(45x60)

@@ -72,8 +72,8 @@ namespace Display {
        void refresh(){
               while (true) {
 
-                     PaintDesktop(); //paints the desktop and all windows
-                     PaintCursor(); //finally paints the cursor so it's on top
+                     setup_background(); //paints the desktop and all windows
+                     show_cursor(); //finally paints the cursor so it's on top
 
                      #if WAIT_FOR_VERTICAL_RETRACE
                             while ((inportb(0x3DA) & 0x08));
@@ -83,5 +83,19 @@ namespace Display {
               }
        }
 
+       void place_pixel(int x, int y) {
 
+       }
+
+       void draw_rect(int x, int y, uint32_t color) {
+
+       }
+
+       void setup_background() {
+
+       }
+
+       void show_cursor() {
+
+       }
  }
