@@ -42,6 +42,8 @@
 #include <signal.h>
 #include <unistd.h>
 #include "sl.h"
+#include "kernel/sys.h"
+#include "kernel/ext2.h"
 
 //linking in Connor's file system
 /*
@@ -91,7 +93,30 @@ int main(int argc, char *argv[])
 {
     int x, i,j;
 
-    int NUM_ITERATIONS = 10;
+    int error_file = open("/sl/errorCount");
+    char* error_count_str = {'\0', '\0', '\0', '\0'};
+    uint8_t error_count = 0;
+    read(error_file, error_count_str, 4);
+    uint8_t len = 0;
+    for (int i = 0; i < 4; i++) {
+        if (error_count_str[i] == '\0') len = i;
+    }
+    auto place = 0;
+    for (int i = len - 1; i >= 0; i--) {
+        auto coef = 1;
+        for (int j = 0; j < place; j++) {
+            coef *= 10;
+        }
+        place++;
+        uint8_t digit = error_count_str[i] - 48;
+        error_count += (digit * coef);
+    }
+    error_count++;
+    error_count_str = (uint8_t*) error_count;
+    error_count_str[len] = '\0';
+    write(error_file, error_count_str, len);
+    int error_count = 0;
+    int NUM_ITERATIONS = error_count;
 
     for (j = 1; j < NUM_ITERATIONS; j++) {
         for (i = 1; i < argc; ++i) {

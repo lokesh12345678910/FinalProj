@@ -1,9 +1,12 @@
 
+namespace Display {
+    extern void init_display();
 
-void init_display();
+    extern void draw_rect(int X, int Y, int Width, int Height, int RGB);
 
-void put_pixel(int X, int Y, int RGB);
+    extern void draw_line(int X1, int Y1, int X2, int Y2, int RGB);
 
-void put_rect(int X, int Y, int Width, int Height, int RGB);
+    extern void setup_background();
 
-void put_line(int X1, int Y1, int X2, int Y2, int RGB);
+    extern void show_cursor();
+}

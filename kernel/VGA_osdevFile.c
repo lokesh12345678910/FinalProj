@@ -29,9 +29,9 @@ namespace VGA {
 #define	VGA_MISC_READ		0x3CC
 #define VGA_GC_INDEX 		0x3CE
 #define VGA_GC_DATA 		0x3CF
-/*			COLOR emulation		MONO emulation */
-#define VGA_CRTC_INDEX		0x3D4		/* 0x3B4 */
-#define VGA_CRTC_DATA		0x3D5		/* 0x3B5 */
+
+#define VGA_CRTC_INDEX		0x3D4
+#define VGA_CRTC_DATA		0x3D5
 #define	VGA_INSTAT_READ		0x3DA
 
 #define	VGA_NUM_SEQ_REGS	5
@@ -1076,14 +1076,6 @@ assume: chain-4 addressing already off */
 		vmemwr(i * 32, buf, font_height);
 		buf += font_height;
 	}
-#if 0
-/* write font 1 */
-	for(i = 0; i < 256; i++)
-	{
-		vmemwr(16384u * 1 + i * 32, buf, font_height);
-		buf += font_height;
-	}
-#endif
 /* restore registers */
 	outb(VGA_SEQ_INDEX, 2);
 	outb(VGA_SEQ_DATA, seq2);
