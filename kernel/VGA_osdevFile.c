@@ -15,6 +15,8 @@ To do:
 //#include <conio.h> /* getch() */
 //#include <dos.h> /* FP_SEG(), FP_OFF(), inportb(), outportb() */
 
+namespace VGA {
+
 #define	VGA_AC_INDEX		0x3C0
 #define	VGA_AC_WRITE		0x3C0
 #define	VGA_AC_READ		0x3C1
@@ -1071,7 +1073,7 @@ assume: chain-4 addressing already off */
 /* write font 0 */
 	for(i = 0; i < 256; i++)
 	{
-		vmemwr(16384u * 0 + i * 32, buf, font_height);
+		vmemwr(i * 32, buf, font_height);
 		buf += font_height;
 	}
 #if 0
@@ -1375,6 +1377,7 @@ so attribute bit b3 is no longer used for 'intense' */
 		vpokeb((80 * 16 + 40 + i) * 2 + 1, 0x0F);
 	}
 }
+}
 /*****************************************************************************
 *****************************************************************************/
 int main(int arg_c, char *arg_v[])
@@ -1382,6 +1385,6 @@ int main(int arg_c, char *arg_v[])
 	//dump_state();
 	//set_text_mode(arg_c > 1);
 	//demo_graphics();
-	font512();
+	VGA::font512();
 	return 0;
 }
