@@ -10,10 +10,13 @@ To do:
 - flesh out code to support SVGA chips?
 - do something with 16- and 256-color palettes?
 *****************************************************************************/
-#include <string.h> /* movedata(), memcpy() */
-#include <stdio.h> /* printf() */
+//#include <string.h> /* movedata(), memcpy() */
+//#include <stdio.h> /* printf() */
 //#include <conio.h> /* getch() */
 //#include <dos.h> /* FP_SEG(), FP_OFF(), inportb(), outportb() */
+#include "machine.h"
+#include "stdint.h"
+#include "debug.h"
 
 namespace VGA {
 
@@ -831,49 +834,49 @@ static void dump(unsigned char *regs, unsigned count)
 	unsigned i;
 
 	i = 0;
-	printf("\t");
+	Debug::printf("\t");
 	for(; count != 0; count--)
 	{
-		printf("0x%02X,", *regs);
+		Debug::printf("0x%02X,", *regs);
 		i++;
 		if(i >= 8)
 		{
 			i = 0;
-			printf("\n\t");
+			Debug::printf("\n\t");
 		}
 		else
-			printf(" ");
+			Debug::printf(" ");
 		regs++;
 	}
-	printf("\n");
+	Debug::printf("\n");
 }
 /*****************************************************************************
 *****************************************************************************/
 void dump_regs(unsigned char *regs)
 {
-	printf("unsigned char g_mode[] =\n");
-	printf("{\n");
+	Debug::printf("unsigned char g_mode[] =\n");
+	Debug::printf("{\n");
 /* dump MISCELLANEOUS reg */
-	printf("/* MISC */\n");
-	printf("\t0x%02X,\n", *regs);
+	Debug::printf("/* MISC */\n");
+	Debug::printf("\t0x%02X,\n", *regs);
 	regs++;
 /* dump SEQUENCER regs */
-	printf("/* SEQ */\n");
+	Debug::printf("/* SEQ */\n");
 	dump(regs, VGA_NUM_SEQ_REGS);
 	regs += VGA_NUM_SEQ_REGS;
 /* dump CRTC regs */
-	printf("/* CRTC */\n");
+	Debug::printf("/* CRTC */\n");
 	dump(regs, VGA_NUM_CRTC_REGS);
 	regs += VGA_NUM_CRTC_REGS;
 /* dump GRAPHICS CONTROLLER regs */
-	printf("/* GC */\n");
+	Debug::printf("/* GC */\n");
 	dump(regs, VGA_NUM_GC_REGS);
 	regs += VGA_NUM_GC_REGS;
 /* dump ATTRIBUTE CONTROLLER regs */
-	printf("/* AC */\n");
+	Debug::printf("/* AC */\n");
 	dump(regs, VGA_NUM_AC_REGS);
 	regs += VGA_NUM_AC_REGS;
-	printf("};\n");
+	Debug::printf("};\n");
 }
 /*****************************************************************************
 *****************************************************************************/
@@ -1019,7 +1022,7 @@ static void vmemwr(unsigned dst_off, unsigned char *src, unsigned count)
 /*****************************************************************************
 *****************************************************************************/
 
-static unsigned pokeb(unsigned my_src, unsigned off, unsigned val) {
+static void pokeb(unsigned my_src, unsigned off, unsigned val) {
 	*(unsigned char *)(16uL * my_src + off) = val;
 }
 static void vpokeb(unsigned off, unsigned val)
@@ -1029,7 +1032,6 @@ static void vpokeb(unsigned off, unsigned val)
 static void pokew(unsigned src, unsigned off, unsigned val) {
 	*(unsigned short *)(16uL * src + off) = val;
 }
-/**
 /*****************************************************************************
 *****************************************************************************/
 static unsigned vpeekb(unsigned off)
@@ -1234,7 +1236,7 @@ DEMO GRAPHICS MODES
 *****************************************************************************/
 static void demo_graphics(void)
 {
-	printf("Screen-clear in 16-color mode will be VERY SLOW\n"
+	Debug::printf("Screen-clear in 16-color mode will be VERY SLOW\n"
 		"Press a key to continue\n");
 	//getch();
 /* 4-color */
@@ -1242,6 +1244,7 @@ static void demo_graphics(void)
 	g_wd = 320;
 	g_ht = 200;
 	g_write_pixel = write_pixel2;
+	g_write_pixel = write_pixel1;
 	draw_x();
 /* 16-color */
 	write_regs(g_640x480x16);
@@ -1374,9 +1377,9 @@ so attribute bit b3 is no longer used for 'intense' */
 *****************************************************************************/
 int main(int arg_c, char *arg_v[])
 {
-	//dump_state();
-	//set_text_mode(arg_c > 1);
-	//demo_graphics();
+	VGA::dump_state();
+	VGA::set_text_mode(arg_c > 1);
+	VGA::demo_graphics();
 	VGA::font512();
 	return 0;
 }

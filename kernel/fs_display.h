@@ -12,7 +12,7 @@ struct fs_display {
     void display_files() {
         ASSERT(cur_dir->is_dir());
         
-        Display::draw_rect(0, 0, 100, 10, 0xc7c7);
+        Display::draw_rect(0, 0, 100, 10, uint8_t(0xc7c7));
         
     }
 };
