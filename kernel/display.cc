@@ -30,11 +30,59 @@ namespace Display {
 
        }
 
+       /*
+       // cursor_start & cursor_end = rows where cursor starts & ends
+      void show_cursor(uint8_t cursor_start, uint8_t cursor_end) {
+             outb(0x3D4, 0x0A);
+             outb(0x3D5, (inb(0x3D5) & 0xC0) | cursor_start);
+     
+             outb(0x3D4, 0x0B);
+             outb(0x3D5, (inb(0x3D5) & 0xE0) | cursor_end);
+      }
+
+
+      void hide_cursor(){
+             outb(0x3D4, 0x0A);
+             outb(0x3D5, 0x20);
+      }
+
+
+      // updates location of cursor
+      void moving_cursor(int x, int y){  // x & y = current coordinates of cursor
+             uint16_t pos = y * Y_RES + x;      // Y_RES = VGA_WIDTH?
+             outb(0x3D4, 0x0F);
+             outb(0x3D5, (uint8_t) (pos & 0xFF));
+             outb(0x3D4, 0x0E);
+             outb(0x3D5, (uint8_t) ((pos >> 8) & 0xFF));
+      }
+
+
+      uint16_t get_cursor_pos(){
+             uint16_t pos = 0;
+
+
+             outb(0x3D4, 0x0F);
+             pos |= inb(0x3D5);
+             outb(0x3D4, 0x0E);
+             pos |= ((uint16_t)inb(0x3D5)) << 8;
+
+
+             return pos;
+      }
+
+       */
+
        void refresh(){
               while (true) {
 
                      setup_background(); //paints the desktop and all windows
                      show_cursor(); //finally paints the cursor so it's on top
+
+                     /* for calling show_cursor: 
+                     // get x and y from pos?
+                     int x;
+                     int y;
+                     show_cursor(x, y);  */
 
                      #if WAIT_FOR_VERTICAL_RETRACE
                             while (inb(0x3DA) & 0x08);
