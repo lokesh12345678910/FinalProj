@@ -17,6 +17,7 @@ To do:
 #include "machine.h"
 #include "stdint.h"
 #include "debug.h"
+#include "vga.h"
 
 namespace VGA {
 
@@ -262,25 +263,6 @@ unsigned char g_720x480x16[] =
 	0x01, 0x00, 0x0F, 0x00, 0x00,
 };
 
-unsigned char g_320x200x256[] =
-{
-/* MISC */
-	0x63,
-/* SEQ */
-	0x03, 0x01, 0x0F, 0x00, 0x0E,
-/* CRTC */
-	0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0xBF, 0x1F,
-	0x00, 0x41, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	0x9C, 0x0E, 0x8F, 0x28,	0x40, 0x96, 0xB9, 0xA3,
-	0xFF,
-/* GC */
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x05, 0x0F,
-	0xFF,
-/* AC */
-	0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-	0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
-	0x41, 0x00, 0x0F, 0x00,	0x00
-};
 
 unsigned char g_320x200x256_modex[] =
 {
@@ -972,9 +954,9 @@ void write_regs(unsigned char *regs)
 }
 /*****************************************************************************
 *****************************************************************************/
-static void set_plane(unsigned p)
+static void set_plane(uint32_t p)
 {
-	unsigned char pmask;
+	uint8_t pmask;
 
 	p &= 3;
 	pmask = 1 << p;
@@ -989,9 +971,9 @@ static void set_plane(unsigned p)
 VGA framebuffer is at A000:0000, B000:0000, or B800:0000
 depending on bits in GC 6
 *****************************************************************************/
-static unsigned get_fb_seg(void)
+unsigned get_fb_seg(void)
 {
-	unsigned seg;
+	uint32_t seg;
 
 	outb(VGA_GC_INDEX, 6);
 	seg = inb(VGA_GC_DATA);
@@ -1122,7 +1104,7 @@ static void write_pixel2(unsigned x, unsigned y, unsigned c)
 }
 /*****************************************************************************
 *****************************************************************************/
-static void write_pixel4p(unsigned x, unsigned y, unsigned c)
+void write_pixel4p(unsigned x, unsigned y, unsigned c)
 {
 	unsigned wd_in_bytes, off, mask, p, pmask;
 
@@ -1143,7 +1125,7 @@ static void write_pixel4p(unsigned x, unsigned y, unsigned c)
 }
 /*****************************************************************************
 *****************************************************************************/
-static void write_pixel8(unsigned x, unsigned y, unsigned c)
+void write_pixel8(unsigned x, unsigned y, unsigned c)
 {
 	unsigned wd_in_bytes;
 	unsigned off;
@@ -1154,7 +1136,7 @@ static void write_pixel8(unsigned x, unsigned y, unsigned c)
 }
 /*****************************************************************************
 *****************************************************************************/
-static void write_pixel8x(unsigned x, unsigned y, unsigned c)
+void write_pixel8x(unsigned x, unsigned y, unsigned c)
 {
 	unsigned wd_in_bytes;
 	unsigned off;
@@ -1166,7 +1148,7 @@ static void write_pixel8x(unsigned x, unsigned y, unsigned c)
 }
 /*****************************************************************************
 *****************************************************************************/
-static void draw_x(void)
+void draw_x(void)
 {
 	unsigned x, y;
 
@@ -1196,7 +1178,7 @@ void dump_state(void)
 /*****************************************************************************
 SET TEXT MODES
 *****************************************************************************/
-void set_text_mode(int hi_res)
+void set_text_mode(int hi_res)	
 {
 	unsigned rows, cols, ht, i;
 

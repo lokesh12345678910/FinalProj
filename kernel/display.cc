@@ -1,7 +1,7 @@
  
 #include "process.h"
 #include "shared.h"
-#include "VGA_osdevFile.cc"
+#include "vga.h"
 #include "threads.h"
 
 namespace Display {
@@ -17,7 +17,7 @@ namespace Display {
               if (x < 0 || y < 0) return;
               for (int i = x; i < width; i++) {
                      for (int j = y; j < height; j++) {
-                            VGA::write_pixel8(i, y, color);
+                            VGA::write_pixel8(i, j, color);
                      }
               }
        }
@@ -37,8 +37,8 @@ namespace Display {
                      show_cursor(); //finally paints the cursor so it's on top
 
                      #if WAIT_FOR_VERTICAL_RETRACE
-                            while (inportb(0x3DA) & 0x08);
-                            while (!(inportb(0x3DA) & 0x08));
+                            while (inb(0x3DA) & 0x08);
+                            while (!(inb(0x3DA) & 0x08));
                      #endif
                      memcpy((uint8_t*) VGA::get_fb_seg(), z_buffer, buffer_size);
               }
