@@ -1014,7 +1014,6 @@ unsigned get_fb_seg(void)
 static void vmemwr(unsigned dst_off, unsigned char *src, unsigned count)
 {
 	memcpy((char *)(get_fb_seg() * 16 + dst_off), src, count);
-	//_vmemwr(get_fb_seg(), dst_off, src, count);
 }
 /*****************************************************************************
 *****************************************************************************/

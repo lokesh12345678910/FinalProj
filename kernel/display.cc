@@ -47,11 +47,7 @@ namespace Display {
               draw_rect(0, 0, X_RES, Y_RES, convert_to_8_bit(WHITE));
        }
 
-       void show_cursor() {
-
-       }
-
-       /*
+       
        // cursor_start & cursor_end = rows where cursor starts & ends
       void show_cursor(uint8_t cursor_start, uint8_t cursor_end) {
              outb(0x3D4, 0x0A);
@@ -91,19 +87,16 @@ namespace Display {
              return pos;
       }
 
-       */
+       
 
        void refresh(){
               while (true) {
 
                      setup_background(); //paints the desktop and all windows
-                     show_cursor(); //finally paints the cursor so it's on top
+                     //show_cursor(); //finally paints the cursor so it's on top
 
-                     /* for calling show_cursor: 
-                     // get x and y from pos?
-                     int x;
-                     int y;
-                     show_cursor(x, y);  */
+                     // for calling show_cursor:
+                     show_cursor(cursor_pos[0], cursor_pos[1]);
 
                      #if WAIT_FOR_VERTICAL_RETRACE
                             while (inb(0x3DA) & 0x08);
