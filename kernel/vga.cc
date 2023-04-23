@@ -263,6 +263,25 @@ unsigned char g_720x480x16[] =
 	0x01, 0x00, 0x0F, 0x00, 0x00,
 };
 
+unsigned char g_320x200x256[] =
+{
+/* MISC */
+	0x63,
+/* SEQ */
+	0x03, 0x01, 0x0F, 0x00, 0x0E,
+/* CRTC */
+	0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0xBF, 0x1F,
+	0x00, 0x41, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x9C, 0x0E, 0x8F, 0x28,	0x40, 0x96, 0xB9, 0xA3,
+	0xFF,
+/* GC */
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x05, 0x0F,
+	0xFF,
+/* AC */
+	0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+	0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+	0x41, 0x00, 0x0F, 0x00,	0x00
+};
 
 unsigned char g_320x200x256_modex[] =
 {
@@ -1074,10 +1093,10 @@ assume: chain-4 addressing already off */
 }
 /*****************************************************************************
 *****************************************************************************/
-static void (*g_write_pixel)(unsigned x, unsigned y, unsigned c);
+static void (*g_write_pixel)(uint32_t x, uint32_t y, uint32_t c);
 static unsigned g_wd, g_ht;
 
-static void write_pixel1(unsigned x, unsigned y, unsigned c)
+static void write_pixel1(uint32_t x, uint32_t y, uint32_t c)
 {
 	unsigned wd_in_bytes;
 	unsigned off, mask;
@@ -1091,7 +1110,7 @@ static void write_pixel1(unsigned x, unsigned y, unsigned c)
 }
 /*****************************************************************************
 *****************************************************************************/
-static void write_pixel2(unsigned x, unsigned y, unsigned c)
+static void write_pixel2(uint32_t x, uint32_t y, uint32_t c)
 {
 	unsigned wd_in_bytes, off, mask;
 
@@ -1104,7 +1123,7 @@ static void write_pixel2(unsigned x, unsigned y, unsigned c)
 }
 /*****************************************************************************
 *****************************************************************************/
-void write_pixel4p(unsigned x, unsigned y, unsigned c)
+void write_pixel4p(uint32_t x, uint32_t y, uint32_t c)
 {
 	unsigned wd_in_bytes, off, mask, p, pmask;
 
@@ -1125,7 +1144,7 @@ void write_pixel4p(unsigned x, unsigned y, unsigned c)
 }
 /*****************************************************************************
 *****************************************************************************/
-void write_pixel8(unsigned x, unsigned y, unsigned c)
+void write_pixel8(uint32_t x, uint32_t y, uint32_t c)
 {
 	unsigned wd_in_bytes;
 	unsigned off;
@@ -1136,7 +1155,7 @@ void write_pixel8(unsigned x, unsigned y, unsigned c)
 }
 /*****************************************************************************
 *****************************************************************************/
-void write_pixel8x(unsigned x, unsigned y, unsigned c)
+void write_pixel8x(uint32_t x, uint32_t y, uint32_t c)
 {
 	unsigned wd_in_bytes;
 	unsigned off;

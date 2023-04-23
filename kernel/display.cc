@@ -5,12 +5,14 @@
 #include "threads.h"
 
 namespace Display {
+       
        uint8_t* z_buffer = nullptr;
        size_t buffer_size = 0;
        uint8_t* back_buffer = nullptr;
        const int X_RES = 320;
        const int Y_RES = 200;
        const int BYTES_PER_PIXEL = 1;
+       int cursor_pos[] = {0, 0};
 
        void draw_rect(int x, int y, int width, int height, uint8_t color) {
               if (x + width > 320 || y + height > 200) return;
@@ -93,7 +95,7 @@ namespace Display {
        }
 
        void init_display() {
-              VGA::write_regs(VGA::g_320x200x256);
+              VGA::write_regs(VGA::g_320x200x256_modex);
 
               buffer_size = X_RES * Y_RES * BYTES_PER_PIXEL;
               z_buffer = new uint8_t[buffer_size];
