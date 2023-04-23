@@ -1,12 +1,15 @@
 
 namespace Display {
-    extern void init_display();
 
-    extern void draw_rect(int X, int Y, int Width, int Height, int RGB);
+    uint8_t convert_to_8_bit(uint32_t color);
 
-    extern void draw_line(int X1, int Y1, int X2, int Y2, int RGB);
+    void init_display();
 
-    extern void setup_background();
+    void draw_rect(int X, int Y, int Width, int Height, int RGB);
 
-    extern void show_cursor();
+    void draw_line(int X1, int Y1, int X2, int Y2, int RGB);
+
+    void setup_background();
+
+    void show_cursor();
 }

@@ -5,6 +5,13 @@
 #include "threads.h"
 
 namespace Display {
+
+       const uint32_t BYTE_MASK = 0xFF;
+       const uint32_t RED = 0xFF6666;
+       const uint32_t BLUE = 0x9999FF;
+       const uint32_t WHITE = 0xFFFFFF;
+       const uint32_t BLACK = 0x0;
+       const uint32_t GREY = 0xA0A0A0;
        
        uint8_t* z_buffer = nullptr;
        size_t buffer_size = 0;
@@ -13,6 +20,18 @@ namespace Display {
        const int Y_RES = 200;
        const int BYTES_PER_PIXEL = 1;
        int cursor_pos[] = {0, 0};
+
+       uint8_t convert_to_8_bit(uint32_t color) {
+              auto r = color >> 16;
+              auto g = (color >> 8) & 0xFF;
+              auto b = color & BYTE_MASK;
+
+              r = (r * 8) / 256;
+              g = (g * 8) / 256;
+              b = (b * 8) / 256;
+
+              return (r << 5) || (g << 2) || b;
+       }
 
        void draw_rect(int x, int y, int width, int height, uint8_t color) {
               if (x + width > 320 || y + height > 200) return;
@@ -25,7 +44,7 @@ namespace Display {
        }
 
        void setup_background() {
-              draw_rect(0, 0, X_RES, Y_RES, uint8_t(0xc7c7));
+              draw_rect(0, 0, X_RES, Y_RES, convert_to_8_bit(WHITE));
        }
 
        void show_cursor() {

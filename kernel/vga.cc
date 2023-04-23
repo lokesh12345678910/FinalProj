@@ -10,10 +10,6 @@ To do:
 - flesh out code to support SVGA chips?
 - do something with 16- and 256-color palettes?
 *****************************************************************************/
-//#include <string.h> /* movedata(), memcpy() */
-//#include <stdio.h> /* printf() */
-//#include <conio.h> /* getch() */
-//#include <dos.h> /* FP_SEG(), FP_OFF(), inportb(), outportb() */
 #include "machine.h"
 #include "stdint.h"
 #include "debug.h"
