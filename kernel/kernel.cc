@@ -4,6 +4,7 @@
 #include "ext2.h"
 #include "sys.h"
 #include "threads.h"
+#include "display.h"
 
 const char* initName = "/sbin/init";
 
@@ -17,7 +18,11 @@ void kernelMain(void) {
     argv[0] = "init";
     argv[1] = nullptr;
     
-    int rc = SYS::exec(initName,1,argv);
-    Debug::panic("*** rc = %d",rc);
+    Display::init_display();
+    for (int i = 0; i < 100; i++) {
+        yield();
+    }
+
+    Display::destroy_display();
 }
 

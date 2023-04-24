@@ -1,9 +1,13 @@
 
+#include "stdint.h"
+
 namespace Display {
 
     uint8_t convert_to_8_bit(uint32_t color);
 
     void init_display();
+
+    void destroy_display();
 
     void draw_rect(int X, int Y, int Width, int Height, int RGB);
 

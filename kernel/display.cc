@@ -3,42 +3,47 @@
 #include "shared.h"
 #include "vga.h"
 #include "threads.h"
+#include "smp.h"
 
 namespace Display {
-
+       
+       // Colors that we can work with
        const uint32_t BYTE_MASK = 0xFF;
        const uint32_t RED = 0xFF6666;
        const uint32_t BLUE = 0x9999FF;
        const uint32_t WHITE = 0xFFFFFF;
        const uint32_t BLACK = 0x0;
        const uint32_t GREY = 0xA0A0A0;
-       
-       uint8_t* z_buffer = nullptr;
+
+       // Basic info about our display   
+       uint8_t* cur_state = nullptr;
        size_t buffer_size = 0;
-       uint8_t* back_buffer = nullptr;
        const int X_RES = 320;
        const int Y_RES = 200;
        const int BYTES_PER_PIXEL = 1;
        int cursor_pos[] = {0, 0};
+       InterruptSafeLock ref_lock{};
 
+       // By Connor Byerman: converts a 32 bit color to 8 bit
        uint8_t convert_to_8_bit(uint32_t color) {
               auto r = color >> 16;
               auto g = (color >> 8) & 0xFF;
               auto b = color & BYTE_MASK;
 
-              r = (r * 8) / 256;
-              g = (g * 8) / 256;
-              b = (b * 8) / 256;
+              r = r >> 5;
+              g = r >> 5;
+              b = b >> 5;
 
-              return (r << 5) || (g << 2) || b;
+              return (r << 5) || (g << 2) || (b & 0x3);
        }
 
+       // Bye Connor Byerman: Draws a rectangle of a given color into a space in the 
        void draw_rect(int x, int y, int width, int height, uint8_t color) {
-              if (x + width > 320 || y + height > 200) return;
+              if (x + width > X_RES || y + height > Y_RES) return;
               if (x < 0 || y < 0) return;
-              for (int i = x; i < width; i++) {
-                     for (int j = y; j < height; j++) {
-                            VGA::write_pixel8(i, j, color);
+              for (int i = y; i < height; i++) {
+                     for (int j = x; j < width; j++) {
+                            cur_state[i * X_RES + j] = color;
                      }
               }
        }
@@ -66,7 +71,7 @@ namespace Display {
 
       // updates location of cursor
       void moving_cursor(int x, int y){  // x & y = current coordinates of cursor
-             uint16_t pos = y * Y_RES + x;      // Y_RES = VGA_WIDTH?
+             uint16_t pos = y * X_RES + x;      // Y_RES = VGA_WIDTH?
              outb(0x3D4, 0x0F);
              outb(0x3D5, (uint8_t) (pos & 0xFF));
              outb(0x3D4, 0x0E);
@@ -91,31 +96,42 @@ namespace Display {
 
        void refresh(){
               while (true) {
-
+                     ref_lock.lock();
                      setup_background(); //paints the desktop and all windows
                      //show_cursor(); //finally paints the cursor so it's on top
+                     ref_lock.unlock();
 
                      // for calling show_cursor:
-                     show_cursor(cursor_pos[0], cursor_pos[1]);
+                     //show_cursor(cursor_pos[0], cursor_pos[1]);
 
-                     #if WAIT_FOR_VERTICAL_RETRACE
+                     /*#if WAIT_FOR_VERTICAL_RETRACE
                             while (inb(0x3DA) & 0x08);
                             while (!(inb(0x3DA) & 0x08));
-                     #endif
-                     memcpy((uint8_t*) VGA::get_fb_seg(), z_buffer, buffer_size);
+                     #endif*/
+                     ref_lock.lock();
+                     for (uint32_t i = 0; i < buffer_size; i++) {
+                            auto color = cur_state[i];
+                            VGA::write_pixel8(i / X_RES, i % X_RES, color);
+                     }
+                     ref_lock.unlock();
               }
        }
 
        void init_display() {
-              VGA::write_regs(VGA::g_320x200x256_modex);
+              VGA::write_regs(VGA::g_640x480x16);
+              VGA::g_wd = X_RES;
 
               buffer_size = X_RES * Y_RES * BYTES_PER_PIXEL;
-              z_buffer = new uint8_t[buffer_size];
-              for (uint32_t i = 0; i < buffer_size; i++) z_buffer[i] = 0;
+              cur_state = new uint8_t[buffer_size];
+              for (uint32_t i = 0; i < buffer_size; i++) cur_state[i] = 0;
 
               auto proc = Shared<Process>::make(true);
               thread(proc, [] {
                      refresh();
               });
+       }
+
+       void destroy_display() {
+              delete cur_state;
        }
  }

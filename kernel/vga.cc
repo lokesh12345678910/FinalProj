@@ -4,6 +4,7 @@ Chris Giese <geezer@execpc.com>	http://my.execpc.com/~geezer
 Release date: ?
 This code is public domain (no copyright).
 You can do whatever you want with it.
+Edited by Connor Byerman
 
 To do:
 - more registers dumps, for various text modes and ModeX
@@ -1033,7 +1034,6 @@ static void pokew(unsigned src, unsigned off, unsigned val) {
 static unsigned vpeekb(unsigned off)
 {
 	return *(unsigned char *)(16uL * get_fb_seg() + off);
-	//return peekb(get_fb_seg(), off);
 }
 /*****************************************************************************
 write font to plane P4 (assuming planes are named P1, P2, P4, P8)
@@ -1088,10 +1088,17 @@ assume: chain-4 addressing already off */
 }
 /*****************************************************************************
 *****************************************************************************/
-static void (*g_write_pixel)(uint32_t x, uint32_t y, uint32_t c);
-static unsigned g_wd, g_ht;
+//static void (*g_write_pixel)(uint32_t x, uint32_t y, uint8_t c);
+uint32_t g_wd, g_ht;
+/*
+Added by Connor Byerman: Changes g_wd and g_ht to specified values (basically setting the resolution)
+*/
+void set_dimensions(uint32_t x_res, uint32_t y_res) {
+	g_wd = x_res;
+	g_ht = y_res;
+}
 
-static void write_pixel1(uint32_t x, uint32_t y, uint32_t c)
+void write_pixel1(uint32_t x, uint32_t y, uint8_t c)
 {
 	unsigned wd_in_bytes;
 	unsigned off, mask;
@@ -1105,7 +1112,7 @@ static void write_pixel1(uint32_t x, uint32_t y, uint32_t c)
 }
 /*****************************************************************************
 *****************************************************************************/
-static void write_pixel2(uint32_t x, uint32_t y, uint32_t c)
+void write_pixel2(uint32_t x, uint32_t y, uint8_t c)
 {
 	unsigned wd_in_bytes, off, mask;
 
@@ -1118,7 +1125,7 @@ static void write_pixel2(uint32_t x, uint32_t y, uint32_t c)
 }
 /*****************************************************************************
 *****************************************************************************/
-void write_pixel4p(uint32_t x, uint32_t y, uint32_t c)
+void write_pixel4p(uint32_t x, uint32_t y, uint8_t c)
 {
 	unsigned wd_in_bytes, off, mask, p, pmask;
 
@@ -1139,7 +1146,7 @@ void write_pixel4p(uint32_t x, uint32_t y, uint32_t c)
 }
 /*****************************************************************************
 *****************************************************************************/
-void write_pixel8(uint32_t x, uint32_t y, uint32_t c)
+void write_pixel8(uint32_t x, uint32_t y, uint8_t c)
 {
 	unsigned wd_in_bytes;
 	unsigned off;
@@ -1150,7 +1157,7 @@ void write_pixel8(uint32_t x, uint32_t y, uint32_t c)
 }
 /*****************************************************************************
 *****************************************************************************/
-void write_pixel8x(uint32_t x, uint32_t y, uint32_t c)
+void write_pixel8x(uint32_t x, uint32_t y, uint8_t c)
 {
 	unsigned wd_in_bytes;
 	unsigned off;
@@ -1161,28 +1168,10 @@ void write_pixel8x(uint32_t x, uint32_t y, uint32_t c)
 	vpokeb(off, c);
 }
 /*****************************************************************************
-*****************************************************************************/
-void draw_x(void)
-{
-	unsigned x, y;
-
-/* clear screen */
-	for(y = 0; y < g_ht; y++)
-		for(x = 0; x < g_wd; x++)
-			g_write_pixel(x, y, 0);
-/* draw 2-color X */
-	for(y = 0; y < g_ht; y++)
-	{
-		g_write_pixel((g_wd - g_ht) / 2 + y, y, 1);
-		g_write_pixel((g_ht + g_wd) / 2 - y, y, 2);
-	}
-	//getch();
-}
-/*****************************************************************************
 READ AND DUMP VGA REGISTER VALUES FOR CURRENT VIDEO MODE
 This is where g_40x25_text[], g_80x50_text[], etc. came from :)
 *****************************************************************************/
-void dump_state(void)
+void dump_state()
 {
 	unsigned char state[VGA_NUM_REGS];
 
@@ -1227,147 +1216,6 @@ void set_text_mode(int hi_res)
 	for(i = 0; i < cols * rows; i++)
 		pokeb(0xB800, i * 2 + 1, 7);
 }
-/*****************************************************************************
-DEMO GRAPHICS MODES
-*****************************************************************************/
-static void demo_graphics(void)
-{
-	Debug::printf("Screen-clear in 16-color mode will be VERY SLOW\n"
-		"Press a key to continue\n");
-	//getch();
-/* 4-color */
-	write_regs(g_320x200x4);
-	g_wd = 320;
-	g_ht = 200;
-	g_write_pixel = write_pixel2;
-	g_write_pixel = write_pixel1;
-	draw_x();
-/* 16-color */
-	write_regs(g_640x480x16);
-	g_wd = 640;
-	g_ht = 480;
-	g_write_pixel = write_pixel4p;
-	draw_x();
-/* 256-color */
-	write_regs(g_320x200x256);
-	g_wd = 320;
-	g_ht = 200;
-	g_write_pixel = write_pixel8;
-	draw_x();
-/* 256-color Mode-X */
-	write_regs(g_320x200x256_modex);
-	g_wd = 320;
-	g_ht = 200;
-	g_write_pixel = write_pixel8x;
-	draw_x();
-/* go back to 80x25 text mode */
-	set_text_mode(0);
-}
-/*****************************************************************************
-*****************************************************************************/
-static unsigned char reverse_bits(unsigned char arg)
-{
-	unsigned char ret_val = 0;
-
-	if(arg & 0x01)
-		ret_val |= 0x80;
-	if(arg & 0x02)
-		ret_val |= 0x40;
-	if(arg & 0x04)
-		ret_val |= 0x20;
-	if(arg & 0x08)
-		ret_val |= 0x10;
-	if(arg & 0x10)
-		ret_val |= 0x08;
-	if(arg & 0x20)
-		ret_val |= 0x04;
-	if(arg & 0x40)
-		ret_val |= 0x02;
-	if(arg & 0x80)
-		ret_val |= 0x01;
-	return ret_val;
-}
-/*****************************************************************************
-512-CHARACTER FONT
-*****************************************************************************/
-static void font512(void)
-{
-/* Turbo C++ 1.0 seems to 'lose' any data declared 'static const' */
-	/*static*/ const char msg1[] = "!txet sdrawkcaB";
-	/*static*/ const char msg2[] = "?rorrim a toG";
-/**/
-	unsigned char seq2, seq4, gc4, gc5, gc6;
-	unsigned font_height, i, j;
-
-/* start in 80x25 text mode */
-	set_text_mode(0);
-/* code pasted in from write_font():
-save registers
-set_plane() modifies GC 4 and SEQ 2, so save them as well */
-	outb(VGA_SEQ_INDEX, 2);
-	seq2 = inb(VGA_SEQ_DATA);
-
-	outb(VGA_SEQ_INDEX, 4);
-	seq4 = inb(VGA_SEQ_DATA);
-/* turn off even-odd addressing (set flat addressing)
-assume: chain-4 addressing already off */
-	outb(VGA_SEQ_DATA, seq4 | 0x04);
-
-	outb(VGA_GC_INDEX, 4);
-	gc4 = inb(VGA_GC_DATA);
-
-	outb(VGA_GC_INDEX, 5);
-	gc5 = inb(VGA_GC_DATA);
-/* turn off even-odd addressing */
-	outb(VGA_GC_DATA, gc5 & ~0x10);
-
-	outb(VGA_GC_INDEX, 6);
-	gc6 = inb(VGA_GC_DATA);
-/* turn off even-odd addressing */
-	outb(VGA_GC_DATA, gc6 & ~0x02);
-/* write font to plane P4 */
-	set_plane(2);
-/* this is different from write_font():
-use font 1 instead of font 0, and use it for BACKWARD text */
-	font_height = 16;
-	for(i = 0; i < 256; i++)
-	{
-		for(j = 0; j < font_height; j++)
-		{
-			vpokeb(16384u * 1 + 32 * i + j,
-				reverse_bits(
-					g_8x16_font[font_height * i + j]));
-		}
-	}
-/* restore registers */
-	outb(VGA_SEQ_INDEX, 2);
-	outb(VGA_SEQ_DATA, seq2);
-	outb(VGA_SEQ_INDEX, 4);
-	outb(VGA_SEQ_DATA, seq4);
-	outb(VGA_GC_INDEX, 4);
-	outb(VGA_GC_DATA, gc4);
-	outb(VGA_GC_INDEX, 5);
-	outb(VGA_GC_DATA, gc5);
-	outb(VGA_GC_INDEX, 6);
-	outb(VGA_GC_DATA, gc6);
-/* now: sacrifice attribute bit b3 (foreground intense color)
-use it to select characters 256-511 in the second font */
-	outb(VGA_SEQ_INDEX, 3);
-	outb(VGA_SEQ_DATA, 4);
-/* xxx - maybe re-program 16-color palette here
-so attribute bit b3 is no longer used for 'intense' */
-	for(i = 0; i < sizeof(msg1); i++)
-	{
-		vpokeb((80 * 8  + 40 + i) * 2 + 0, msg1[i]);
-/* set attribute bit b3 for backward font */
-		vpokeb((80 * 8  + 40 + i) * 2 + 1, 0x0F);
-	}
-	for(i = 0; i < sizeof(msg2); i++)
-	{
-		vpokeb((80 * 16 + 40 + i) * 2 + 0, msg2[i]);
-		vpokeb((80 * 16 + 40 + i) * 2 + 1, 0x0F);
-	}
-}
 }
 /*****************************************************************************
 *****************************************************************************/
@@ -1375,7 +1223,5 @@ int main(int arg_c, char *arg_v[])
 {
 	VGA::dump_state();
 	VGA::set_text_mode(arg_c > 1);
-	VGA::demo_graphics();
-	VGA::font512();
 	return 0;
 }
