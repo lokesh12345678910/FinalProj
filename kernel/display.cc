@@ -4,6 +4,7 @@
 #include "vga.h"
 #include "threads.h"
 #include "smp.h"
+#include "fs_display.h"
 
 namespace Display {
        
@@ -23,6 +24,8 @@ namespace Display {
        const int BYTES_PER_PIXEL = 1;
        int cursor_pos[] = {0, 0};
        InterruptSafeLock ref_lock{};
+       Window* first_window;
+       
 
        // By Connor Byerman: converts a 32 bit color to 8 bit
        uint8_t convert_to_8_bit(uint32_t color) {
@@ -32,9 +35,9 @@ namespace Display {
 
               r = r >> 5;
               g = r >> 5;
-              b = b >> 5;
+              b = b >> 6;
 
-              return (r << 5) || (g << 2) || (b & 0x3);
+              return (r << 5) || (g << 2) || b;
        }
 
        // Bye Connor Byerman: Draws a rectangle of a given color into a space in the 
@@ -50,6 +53,7 @@ namespace Display {
 
        void setup_background() {
               draw_rect(0, 0, X_RES, Y_RES, convert_to_8_bit(WHITE));
+              draw_rect(X_RES / 3, Y_RES / 3, 2 * X_RES / 3, 2 * Y_RES / 3, Display::convert_to_8_bit(Display::BLUE));
        }
 
        
@@ -104,21 +108,20 @@ namespace Display {
                      // for calling show_cursor:
                      //show_cursor(cursor_pos[0], cursor_pos[1]);
 
-                     /*#if WAIT_FOR_VERTICAL_RETRACE
-                            while (inb(0x3DA) & 0x08);
-                            while (!(inb(0x3DA) & 0x08));
-                     #endif*/
+                     //while (inb(0x3DA) & 0x08);
+                     //while (!(inb(0x3DA) & 0x08));
+
                      ref_lock.lock();
                      for (uint32_t i = 0; i < buffer_size; i++) {
                             auto color = cur_state[i];
-                            VGA::write_pixel8(i / X_RES, i % X_RES, color);
+                            VGA::write_pixel8(i % X_RES, i / X_RES, color, X_RES);
                      }
                      ref_lock.unlock();
               }
        }
 
        void init_display() {
-              VGA::write_regs(VGA::g_640x480x16);
+              VGA::write_regs(VGA::g_320x200x256);
               VGA::g_wd = X_RES;
 
               buffer_size = X_RES * Y_RES * BYTES_PER_PIXEL;

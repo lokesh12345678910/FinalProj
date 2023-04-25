@@ -987,53 +987,59 @@ static void set_plane(uint32_t p)
 VGA framebuffer is at A000:0000, B000:0000, or B800:0000
 depending on bits in GC 6
 *****************************************************************************/
-unsigned get_fb_seg(void)
+uint32_t get_fb_seg()
 {
-	uint32_t seg;
+	uint32_t seg;//, chain_4;
 
 	outb(VGA_GC_INDEX, 6);
 	seg = inb(VGA_GC_DATA);
+
+	//outb(VGA_SEQ_INDEX, 4);
+	//chain_4 = inb(VGA_SEQ_INDEX);
+
 	seg >>= 2;
 	seg &= 3;
 	switch(seg)
 	{
-	case 0:
 	case 1:
-		seg = 0xA000;
-		break;
+		return 0xA000;
 	case 2:
-		seg = 0xB000;
-		break;
+		return 0xB000;
 	case 3:
-		seg = 0xB800;
-		break;
+		return 0xB800;
+	default:
+		return 0xA000;
 	}
 	return seg;
 }
 /*****************************************************************************
 *****************************************************************************/
+// Redone by Connor Byerman to work in our framework
 static void vmemwr(unsigned dst_off, unsigned char *src, unsigned count)
 {
 	memcpy((char *)(get_fb_seg() * 16 + dst_off), src, count);
 }
 /*****************************************************************************
 *****************************************************************************/
-
+// Redone by Connor Byerman to work in our framework
 static void pokeb(unsigned my_src, unsigned off, unsigned val) {
-	*(unsigned char *)(16uL * my_src + off) = val;
+	*(uint8_t *)((my_src << 4) + off) = val;
 }
+// Redone by Connor Byerman to work in our framework
 static void vpokeb(unsigned off, unsigned val)
 {
 	pokeb(get_fb_seg(), off, val);
 }
+// Redone by Connor Byerman to work in our framework
 static void pokew(unsigned src, unsigned off, unsigned val) {
-	*(unsigned short *)(16uL * src + off) = val;
+	*(uint8_t *)((src << 4) + off) = val;
 }
 /*****************************************************************************
 *****************************************************************************/
+// Redone by Connor Byerman to work in our framework
 static unsigned vpeekb(unsigned off)
 {
-	return *(unsigned char *)(16uL * get_fb_seg() + off);
+	return *(uint8_t *)((get_fb_seg() << 4) + off);
 }
 /*****************************************************************************
 write font to plane P4 (assuming planes are named P1, P2, P4, P8)
@@ -1146,12 +1152,12 @@ void write_pixel4p(uint32_t x, uint32_t y, uint8_t c)
 }
 /*****************************************************************************
 *****************************************************************************/
-void write_pixel8(uint32_t x, uint32_t y, uint8_t c)
+void write_pixel8(uint32_t x, uint32_t y, uint8_t c, uint32_t scan_line_length)
 {
 	unsigned wd_in_bytes;
 	unsigned off;
 
-	wd_in_bytes = g_wd;
+	wd_in_bytes = scan_line_length;
 	off = wd_in_bytes * y + x;
 	vpokeb(off, c);
 }
