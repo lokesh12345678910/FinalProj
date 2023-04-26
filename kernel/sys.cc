@@ -45,6 +45,7 @@ public:
         return bytes_read;
     }
 
+    // By Charlie Barbas: performs a write syscall utilizing write method from Node class
     ssize_t write(void* buffer, size_t n) {
         int64_t bytes_written = 0;
 

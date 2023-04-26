@@ -178,40 +178,41 @@ uint32_t Node::entry_count() {
     return count;
 }
 
- uint32_t Node::node_write(void* buffer, off_t offset, uint32_t size){
-    const char* buffer_ptr = (const char*) buffer;
+// By Charlie Barbas: performs a write to an ext2 file
+uint32_t Node::node_write(void* buffer, off_t offset, uint32_t size){
+   const char* buffer_ptr = (const char*) buffer;
 
-    uint32_t fileSize = size_in_bytes();
+   uint32_t fileSize = size_in_bytes();
 
-    // if the offset + size of what is being written > total size of file in bytes, resize the file
-    if(offset + size > fileSize){   
-        return -1;
-    }
+   // writing too much to file, early return (unlikely)
+   if(offset + size > fileSize){  
+       return -1;
+   }
 
-    uint32_t remaining_data = size;
-    
-    while(remaining_data > 0){
+   uint32_t remaining_data = size;
+  
+   while(remaining_data > 0){
 
-        // calculate block number & offset within block
-        uint32_t block_num = offset / block_size;
-        uint32_t block_offset = offset % block_size;
+       // calculate block number & offset within block
+       uint32_t block_num = offset / block_size;
+       uint32_t block_offset = offset % block_size;
 
-        // get block containing offset
-        uint32_t* direct = &data.direct0;
-        uint32_t* block_ptr = (uint32_t*) direct[block_num];
+       // get block containing offset
+       uint32_t* direct = &data.direct0;
+       uint32_t* block_ptr = (uint32_t*) direct[block_num];
 
-        if((uint32_t*) block_ptr == nullptr) {   // block does not exist
-                return -1;
-        }
+       if((uint32_t*) block_ptr == nullptr) {   // block does not exist, early return
+               return -1;
+       }
 
-        // copy max amount of data to block
-        const size_t bytes_to_copy = remaining_data; // could also be block_size - block_offset? whichever is smaller
-        memcpy(block_ptr + block_offset, buffer_ptr, bytes_to_copy);
+       // copy max amount of data to block
+       const size_t bytes_to_copy = remaining_data; // roughly equivalent to block_size - block_offset
+       memcpy(block_ptr + block_offset, buffer_ptr, bytes_to_copy);
 
-        // update amount of data left to copy, buffer, and offset        
-        remaining_data -= bytes_to_copy;
-        offset += bytes_to_copy;
-        buffer_ptr += bytes_to_copy;  // how to update buffer?
+       // update amount of data left to copy, buffer, and offset       
+       remaining_data -= bytes_to_copy;
+       offset += bytes_to_copy;
+       buffer_ptr += bytes_to_copy; 
     }
 
     return size - remaining_data;   // return number of bytes written
