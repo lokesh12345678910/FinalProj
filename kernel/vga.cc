@@ -1159,15 +1159,15 @@ void set_text_mode(int hi_res)
 	else
 		write_font(g_8x8_font, 8);
 /* tell the BIOS what we've done, so BIOS text output works OK */
-	pokew(0x40, 0x4A, cols);	/* columns on screen */
-	pokew(0x40, 0x4C, cols * rows * 2); /* framebuffer size */
-	pokew(0x40, 0x50, 0);		/* cursor pos'n */
-	pokeb(0x40, 0x60, ht - 1);	/* cursor shape */
-	pokeb(0x40, 0x61, ht - 2);
-	pokeb(0x40, 0x84, rows - 1);	/* rows on screen - 1 */
-	pokeb(0x40, 0x85, ht);		/* char height */
+	set_word(0x40, 0x4A, cols);	/* columns on screen */
+	set_word(0x40, 0x4C, cols * rows * 2); /* framebuffer size */
+	set_word(0x40, 0x50, 0);		/* cursor pos'n */
+	set_byte(0x40, 0x60, ht - 1);	/* cursor shape */
+	set_byte(0x40, 0x61, ht - 2);
+	set_byte(0x40, 0x84, rows - 1);	/* rows on screen - 1 */
+	set_byte(0x40, 0x85, ht);		/* char height */
 /* set white-on-black attributes for all text */
 	for(i = 0; i < cols * rows; i++)
-		pokeb(0xB800, i * 2 + 1, 7);
+		set_byte(0xB800, i * 2 + 1, 7);
 }
 }
