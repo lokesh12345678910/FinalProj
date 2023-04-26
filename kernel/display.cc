@@ -134,25 +134,27 @@ namespace Display {
               auto temp = first_window;
               auto cur_id = 1;
               while (temp != nullptr) {
-                     if (cur_id == id) temp->draw_window();
+                     if (cur_id == id) {
+                            temp->draw_window();
+                            return;
+                     }
                      id++;
               }
        }
 
        void refresh(){
-              auto str = "Hello!\0";
               while (true) {
-                     ref_lock.lock();
+                     //ref_lock.lock();
                      setup_background(); //paints the desktop and all windows
                      //show_cursor(); //finally paints the cursor so it's on top
-                     write_line(str, 50, 50, convert_to_6_bit(RED));
-                     ref_lock.unlock();
+                     display_window(1);
+                     //ref_lock.unlock();
 
                      // for calling show_cursor:
                      //show_cursor(cursor_pos[0], cursor_pos[1]);
 
-                     //while (inb(0x3DA) & 0x08);
-                     //while (!(inb(0x3DA) & 0x08));
+                     while (inb(0x3DA) & 0x08);
+                     while (!(inb(0x3DA) & 0x08));
 
                      //ref_lock.lock();
                      for (uint32_t i = 0; i < buffer_size; i++) {

@@ -6,7 +6,7 @@ struct FsDisplay: Display::Window {
     Shared<Node> cur_dir;
 
 
-    FsDisplay(Shared<Ext2> file_s): Display::Window(0, 0, Display::X_RES, Display::Y_RES),
+    FsDisplay(Shared<Ext2> file_s): Display::Window(0, 0, Display::X_RES - 60, Display::Y_RES - 60),
                                     fs(file_s), cur_dir(file_s->root) {}
 
     void draw_window() {
