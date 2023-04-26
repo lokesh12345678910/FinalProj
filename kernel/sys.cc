@@ -50,12 +50,13 @@ public:
 
 
        // start of buf not in user-space, fd doesn't point to stdin/out/err
-       if(n == 0 | file_offset + n < size()){
+       if(n == 0 || file_offset + n < size()){
            return -1;
        }
 
 
        while(n > 0){
+        /*
            int64_t res = node->node_write(buffer, file_offset, n); // implement write method in node class in ext2.h (memcpy)
 
 
@@ -64,7 +65,7 @@ public:
           
            bytes_written += write(buffer, n);
            file_offset += bytes_written;
-       }
+       */}
 
 
        return bytes_written;
