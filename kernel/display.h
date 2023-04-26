@@ -36,6 +36,8 @@ namespace Display {
     void write_line(char* str, int x, int y, uint8_t color);
 
     void setup_background();
+    
+    void add_window();
 
     struct Window {
         int x, y, width, height;

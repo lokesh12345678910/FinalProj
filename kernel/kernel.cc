@@ -20,6 +20,7 @@ void kernelMain(void) {
     
     Display::init_320x200_display();
     for (int i = 0; i < 100; i++) {
+        if (i == 50) Display::add_window();
         yield();
     }
 

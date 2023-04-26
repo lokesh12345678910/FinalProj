@@ -126,6 +126,16 @@ namespace Display {
               }
        }
 
+       void display_window(int id) {
+              if (first_window == nullptr) return;
+              auto temp = first_window;
+              auto cur_id = 1;
+              while (temp != nullptr) {
+                     if (cur_id == id) temp->draw_window();
+                     id++;
+              }
+       }
+
        void refresh(){
               auto str = "Hello!\0";
               while (true) {
