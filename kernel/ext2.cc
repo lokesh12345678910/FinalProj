@@ -178,3 +178,55 @@ uint32_t Node::entry_count() {
     return count;
 }
 
+ uint32_t Node::node_write(void* buffer, off_t offset, uint32_t size){
+    //const void* block_offset = (uint32_t) offset % block_size;
+    // direct 0 * node_size + block offset
+    //memcpy(buffer, block_offset, size);
+
+    uint32_t fileSize;
+
+    // if the offset + size of what is being written > total size of file in bytes, resize the file
+    if(offset + size > fileSize){   
+        return -1;
+    }
+
+    uint32_t remaining_data = size;
+    
+    while(remaining_data > 0){
+
+        // calculate block number & offset within block
+        uint32_t block_num = offset / block_size;
+        uint32_t block_offset = offset % block_size;
+
+        // get block containing offset
+        uint32_t* direct = &data.direct0;
+        uint32_t block_index = direct[block_num];
+
+        // if block doesnt exist yet ---> allocate block? may not be needed, return -1 if so
+        if(block_index == 0){
+            //block_index = allocate_block();   // need to write method for this?
+            if(block_index == 0){   // failed to allocate block
+                return -1;
+            }
+            direct[block_num] = block_num;
+        }     
+
+        // get pointer for data block
+        char* block_ptr; //= find(block_index); // write another method??
+        if (block_ptr == nullptr) {
+            // Failed to get the data pointer for the block
+            return -1;
+        }
+
+        // copy max amount of data to block
+        const size_t bytes_to_copy = remaining_data; // could also be block_size - block_offset? whichever is smaller
+        memcpy(block_ptr + block_offset, buffer, bytes_to_copy);
+
+        // update amount of data left to copy, buffer, and offset        
+        remaining_data -= bytes_to_copy;
+        offset += bytes_to_copy;
+        //buffer += bytes_to_copy;  // how to update buffer?
+    }
+
+    return size - remaining_data;   // return number of bytes written
+ }
