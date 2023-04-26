@@ -183,7 +183,7 @@ uint32_t Node::entry_count() {
     // direct 0 * node_size + block offset
     //memcpy(buffer, block_offset, size);
 
-    uint32_t fileSize;
+    uint32_t fileSize = size_in_bytes();
 
     // if the offset + size of what is being written > total size of file in bytes, resize the file
     if(offset + size > fileSize){   

@@ -994,9 +994,6 @@ uint32_t get_fb_seg()
 	outb(VGA_GC_INDEX, 6);
 	seg = inb(VGA_GC_DATA);
 
-	//outb(VGA_SEQ_INDEX, 4);
-	//chain_4 = inb(VGA_SEQ_INDEX);
-
 	seg >>= 2;
 	seg &= 3;
 	switch(seg)
@@ -1015,29 +1012,29 @@ uint32_t get_fb_seg()
 /*****************************************************************************
 *****************************************************************************/
 // Redone by Connor Byerman to work in our framework
-static void vmemwr(unsigned dst_off, unsigned char *src, unsigned count)
+static void write_to_video_mem(unsigned dst_off, unsigned char *src, unsigned count)
 {
-	memcpy((char *)(get_fb_seg() * 16 + dst_off), src, count);
+	memcpy((uint8_t *)(get_fb_seg() << 4 + dst_off), src, count);
 }
 /*****************************************************************************
 *****************************************************************************/
 // Redone by Connor Byerman to work in our framework
-static void pokeb(unsigned my_src, unsigned off, unsigned val) {
+static void set_byte(unsigned my_src, unsigned off, unsigned val) {
 	*(uint8_t *)((my_src << 4) + off) = val;
 }
-// Redone by Connor Byerman to work in our framework
-static void vpokeb(unsigned off, unsigned val)
+// Remake of vpokeb for our franework
+static void byte_to_screen(unsigned off, unsigned val)
 {
-	pokeb(get_fb_seg(), off, val);
+	set_byte(get_fb_seg(), off, val);
 }
-// Redone by Connor Byerman to work in our framework
-static void pokew(unsigned src, unsigned off, unsigned val) {
-	*(uint8_t *)((src << 4) + off) = val;
+// Remake of pokew for our framework
+static void set_word(unsigned src, unsigned off, unsigned val) {
+	*(uint16_t *)((src << 4) + off) = val;
 }
 /*****************************************************************************
 *****************************************************************************/
-// Redone by Connor Byerman to work in our framework
-static unsigned vpeekb(unsigned off)
+// Remake of vpeekb for our framework
+static unsigned byte_from_scren(unsigned off)
 {
 	return *(uint8_t *)((get_fb_seg() << 4) + off);
 }
@@ -1092,86 +1089,37 @@ assume: chain-4 addressing already off */
 	outb(VGA_GC_INDEX, 6);
 	outb(VGA_GC_DATA, gc6);
 }
-/*****************************************************************************
-*****************************************************************************/
-//static void (*g_write_pixel)(uint32_t x, uint32_t y, uint8_t c);
-uint32_t g_wd, g_ht;
-/*
-Added by Connor Byerman: Changes g_wd and g_ht to specified values (basically setting the resolution)
-*/
-void set_dimensions(uint32_t x_res, uint32_t y_res) {
-	g_wd = x_res;
-	g_ht = y_res;
-}
 
-void write_pixel1(uint32_t x, uint32_t y, uint8_t c)
+void write_pixel1(uint32_t x, uint32_t y, uint8_t c, uint32_t scan_line_length)
 {
-	unsigned wd_in_bytes;
-	unsigned off, mask;
+	uint32_t wd_in_bytes, off, mask;
 
 	c = (c & 1) * 0xFF;
 	wd_in_bytes = g_wd / 8;
 	off = wd_in_bytes * y + x / 8;
 	x = (x & 7) * 1;
 	mask = 0x80 >> x;
-	vpokeb(off, (vpeekb(off) & ~mask) | (c & mask));
+	byte_to_screen(off, (byte_fram_screen(off) & ~mask) | (c & mask));
 }
 /*****************************************************************************
 *****************************************************************************/
-void write_pixel2(uint32_t x, uint32_t y, uint8_t c)
+void write_pixel2(uint32_t x, uint32_t y, uint8_t c, uint32_t scan_line_length)
 {
-	unsigned wd_in_bytes, off, mask;
+	uuint32_t wd_in_bytes, off, mask;
 
 	c = (c & 3) * 0x55;
-	wd_in_bytes = g_wd / 4;
+	wd_in_bytes = scan_line_length / 4;
 	off = wd_in_bytes * y + x / 4;
 	x = (x & 3) * 2;
 	mask = 0xC0 >> x;
-	vpokeb(off, (vpeekb(off) & ~mask) | (c & mask));
-}
-/*****************************************************************************
-*****************************************************************************/
-void write_pixel4p(uint32_t x, uint32_t y, uint8_t c)
-{
-	unsigned wd_in_bytes, off, mask, p, pmask;
-
-	wd_in_bytes = g_wd / 8;
-	off = wd_in_bytes * y + x / 8;
-	x = (x & 7) * 1;
-	mask = 0x80 >> x;
-	pmask = 1;
-	for(p = 0; p < 4; p++)
-	{
-		set_plane(p);
-		if(pmask & c)
-			vpokeb(off, vpeekb(off) | mask);
-		else
-			vpokeb(off, vpeekb(off) & ~mask);
-		pmask <<= 1;
-	}
+	byte_to_screen(off, (byte_from_screen(off) & ~mask) | (c & mask));
 }
 /*****************************************************************************
 *****************************************************************************/
 void write_pixel8(uint32_t x, uint32_t y, uint8_t c, uint32_t scan_line_length)
 {
-	unsigned wd_in_bytes;
-	unsigned off;
-
-	wd_in_bytes = scan_line_length;
-	off = wd_in_bytes * y + x;
-	vpokeb(off, c);
-}
-/*****************************************************************************
-*****************************************************************************/
-void write_pixel8x(uint32_t x, uint32_t y, uint8_t c)
-{
-	unsigned wd_in_bytes;
-	unsigned off;
-
-	wd_in_bytes = g_wd / 4;
-	off = wd_in_bytes * y + x / 4;
-	set_plane(x & 3);
-	vpokeb(off, c);
+	uint32_t off = scan_line_length * y + x;
+	byte_to_screen(off, c);
 }
 /*****************************************************************************
 READ AND DUMP VGA REGISTER VALUES FOR CURRENT VIDEO MODE
