@@ -18,7 +18,7 @@ void kernelMain(void) {
     argv[0] = "init";
     argv[1] = nullptr;
     
-    Display::init_display();
+    Display::init_320x200_display();
     for (int i = 0; i < 100; i++) {
         yield();
     }
