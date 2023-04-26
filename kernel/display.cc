@@ -90,6 +90,7 @@ namespace Display {
              return pos;
       }*/
 
+       // Draws a given character in the initialized text mode
        void draw_char(uint8_t chr, int x, int y, uint8_t color) {
               
               uint32_t mask = 1;
@@ -97,6 +98,7 @@ namespace Display {
               uint8_t* chr_symbol = font + (uint32_t(chr) << 4);
 
               for (int i = 0; i < Y_TEXT; i++) {
+                     // Bit map in reverse, so make sure to account for that
                      for (int j = X_TEXT - 1; j >= 0; j--) {
                             if (chr_symbol[i] & mask) pixel_in_cur(x + j, y + i - baseline, color);
                             mask = mask << 1;
@@ -116,6 +118,7 @@ namespace Display {
               }
        }
 
+       // Adds a file window to the display
        void add_window() {
               FsDisplay* window = new FsDisplay(gheith::root_fs);
               if (first_window == nullptr) first_window = window;
