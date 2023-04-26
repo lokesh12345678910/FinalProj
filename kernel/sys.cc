@@ -53,11 +53,11 @@ public:
            return -1;
         }
 
-       int64_t bytes_written = node->node_write(buffer, file_offset, n); // write method in node class in ext2.cc (memcpy)
-       file_offset += bytes_written;
+        bytes_written = node->node_write(buffer, file_offset, n); // write method in node class in ext2.cc (memcpy)
+        file_offset += bytes_written;
 
-       return bytes_written;
-      // can write less than nbyte if it hits an invalid (non-user-space) address
+        return bytes_written;
+        // can write less than nbyte if it hits an invalid (non-user-space) address
     }
 
 };
