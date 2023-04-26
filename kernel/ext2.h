@@ -138,6 +138,10 @@ public:
     // remember that block size is defined by the file system not the device
     void read_block(uint32_t number, char* buffer) override;
 
+
+    uint32_t node_write(void* buffer, off_t offset, uint32_t size);
+
+
     inline uint16_t get_type() {
         return data.get_type();
     }
