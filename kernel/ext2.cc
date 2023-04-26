@@ -200,19 +200,19 @@ uint32_t Node::entry_count() {
 
         // get block containing offset
         uint32_t* direct = &data.direct0;
-        uint32_t block_index = direct[block_num];
+        uint32_t* block_ptr = (uint32_t*) direct[block_num];
 
         // if block doesnt exist yet ---> allocate block? may not be needed, return -1 if so
-        if(block_index == 0){
+        if((uint32_t*) block_ptr == nullptr){
             //block_index = allocate_block();   // need to write method for this?
-            if(block_index == 0){   // failed to allocate block
+            if((uint32_t*) block_ptr == nullptr) {   // failed to allocate block
                 return -1;
             }
             direct[block_num] = block_num;
         }     
 
         // get pointer for data block
-        char* block_ptr; //= find(block_index); // write another method??
+        // write another method??
         if (block_ptr == nullptr) {
             // Failed to get the data pointer for the block
             return -1;
