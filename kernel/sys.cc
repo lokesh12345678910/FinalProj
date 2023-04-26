@@ -46,25 +46,18 @@ public:
     }
 
     ssize_t write(void* buffer, size_t n) {
-        int64_t bytes_written;
+        int64_t bytes_written = 0;
 
-       // start of buf not in user-space, fd doesn't point to stdin/out/err
-       if(n == 0 || file_offset + n < size()){
+        // start of buf not in user-space, fd doesn't point to stdin/out/err
+        if(n == 0 || file_offset + n < size()){
            return -1;
-       }
+        }
 
-       while(n > 0){
-           int64_t bytes_written = node->node_write(buffer, file_offset, n); // implement write method in node class in ext2.h (memcpy)
-
-           n = size() - file_offset;
-           if (n == 0) return -1;
-          
-           bytes_written += write(buffer, n);
-           file_offset += bytes_written;
-       }
+       int64_t bytes_written = node->node_write(buffer, file_offset, n); // write method in node class in ext2.cc (memcpy)
+       file_offset += bytes_written;
 
        return bytes_written;
-      // can write less than nbyte if we hit an invalid (non-user-space) address
+      // can write less than nbyte if it hits an invalid (non-user-space) address
     }
 
 };
