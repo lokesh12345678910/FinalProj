@@ -45,8 +45,8 @@ namespace Display {
 
         ~Window() {}
 
-        void draw_base() {
-            draw_rect(0, 0, 150, 150, convert_to_6_bit(WHITE));
+        void draw_window() {
+            draw_rect(x, y, width, width, convert_to_6_bit(WHITE));
         }
     };
 }

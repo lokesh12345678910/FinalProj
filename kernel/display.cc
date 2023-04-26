@@ -31,13 +31,14 @@ namespace Display {
               return (r << 4) + (g << 2) + b;
        }
 
+       // Updates a pixel in the current state
        void pixel_in_cur(int x, int y, uint8_t color) {
               if (x < 0 || y < 0) return;
               if (x > X_RES || y > Y_RES) return;
               cur_state[y * X_RES + x] = color;
        }
 
-       // Bye Connor Byerman: Draws a rectangle of a given color into a space in the 
+       // Draws a rectangle of a given color into a space in the 
        void draw_rect(int x, int y, int width, int height, uint8_t color) {
               for (int i = x; i < width; i++) {
                      for (int j = y; j < height; j++) {
@@ -96,7 +97,7 @@ namespace Display {
               uint8_t* chr_symbol = font + (uint32_t(chr) << 4);
 
               for (int i = 0; i < Y_TEXT; i++) {
-                     for (int j = 0; j < X_TEXT; j++) {
+                     for (int j = X_TEXT - 1; j >= 0; j--) {
                             if (chr_symbol[i] & mask) pixel_in_cur(x + j, y + i - baseline, color);
                             mask = mask << 1;
                      }
@@ -104,8 +105,9 @@ namespace Display {
               }
        }
 
-       void write_line(uint8_t* str, int x, int y, uint8_t color) {
-              auto chr = str;
+       // Writes out a given string in the display using a 8x16 bit-mapping
+       void write_line(const char* str, int x, int y, uint8_t color) {
+              auto chr = (uint8_t*) str;
               auto index = 0;
 
               while (chr[index] != '\0') {
@@ -114,27 +116,37 @@ namespace Display {
               }
        }
 
+       void add_window() {
+              FsDisplay* window = new FsDisplay(gheith::root_fs);
+              if (first_window == nullptr) first_window = window;
+              else {
+                     auto temp = first_window;
+                     while (temp->next != nullptr) temp = temp->next;
+                     temp->next = window;
+              }
+       }
+
        void refresh(){
-              auto str = 0x006948;
+              auto str = "Hello!\0";
               while (true) {
                      ref_lock.lock();
                      setup_background(); //paints the desktop and all windows
                      //show_cursor(); //finally paints the cursor so it's on top
-                     write_line((uint8_t*) &str, 50, 50, convert_to_6_bit(RED));
+                     write_line(str, 50, 50, convert_to_6_bit(RED));
                      ref_lock.unlock();
 
                      // for calling show_cursor:
                      //show_cursor(cursor_pos[0], cursor_pos[1]);
 
-                     while (inb(0x3DA) & 0x08);
-                     while (!(inb(0x3DA) & 0x08));
+                     //while (inb(0x3DA) & 0x08);
+                     //while (!(inb(0x3DA) & 0x08));
 
-                     ref_lock.lock();
+                     //ref_lock.lock();
                      for (uint32_t i = 0; i < buffer_size; i++) {
                             auto color = cur_state[i];
                             VGA::write_pixel8(i % X_RES, i / X_RES, color, X_RES);
                      }
-                     ref_lock.unlock();
+                     //ref_lock.unlock();
               }
        }
 

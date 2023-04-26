@@ -1014,7 +1014,7 @@ uint32_t get_fb_seg()
 // Redone by Connor Byerman to work in our framework
 static void write_to_video_mem(unsigned dst_off, unsigned char *src, unsigned count)
 {
-	memcpy((uint8_t *)(get_fb_seg() << 4 + dst_off), src, count);
+	memcpy((uint8_t *)((get_fb_seg() << 4) + dst_off), src, count);
 }
 /*****************************************************************************
 *****************************************************************************/
@@ -1034,7 +1034,7 @@ static void set_word(unsigned src, unsigned off, unsigned val) {
 /*****************************************************************************
 *****************************************************************************/
 // Remake of vpeekb for our framework
-static unsigned byte_from_scren(unsigned off)
+static unsigned byte_from_screen(unsigned off)
 {
 	return *(uint8_t *)((get_fb_seg() << 4) + off);
 }
@@ -1074,7 +1074,7 @@ assume: chain-4 addressing already off */
 /* write font 0 */
 	for(i = 0; i < 256; i++)
 	{
-		vmemwr(i * 32, buf, font_height);
+		write_to_video_mem(i * 32, buf, font_height);
 		buf += font_height;
 	}
 /* restore registers */
@@ -1095,17 +1095,17 @@ void write_pixel1(uint32_t x, uint32_t y, uint8_t c, uint32_t scan_line_length)
 	uint32_t wd_in_bytes, off, mask;
 
 	c = (c & 1) * 0xFF;
-	wd_in_bytes = g_wd / 8;
+	wd_in_bytes = scan_line_length / 8;
 	off = wd_in_bytes * y + x / 8;
 	x = (x & 7) * 1;
 	mask = 0x80 >> x;
-	byte_to_screen(off, (byte_fram_screen(off) & ~mask) | (c & mask));
+	byte_to_screen(off, (byte_from_screen(off) & ~mask) | (c & mask));
 }
 /*****************************************************************************
 *****************************************************************************/
 void write_pixel2(uint32_t x, uint32_t y, uint8_t c, uint32_t scan_line_length)
 {
-	uuint32_t wd_in_bytes, off, mask;
+	uint32_t wd_in_bytes, off, mask;
 
 	c = (c & 3) * 0x55;
 	wd_in_bytes = scan_line_length / 4;
